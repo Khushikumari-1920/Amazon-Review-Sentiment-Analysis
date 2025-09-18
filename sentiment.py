@@ -4,21 +4,18 @@ import re
 from textblob import TextBlob
 import matplotlib.pyplot as plt
 import seaborn as sns
+import streamlit as st
+
+st.title("Amazon Reviews Sentiment Analysis")
 
 # Step 1: Load the Dataset
 df = pd.read_csv('amazon.csv', on_bad_lines='skip', delimiter=',', encoding='utf-8')
 
-# Print column names for debugging (optional)
-print("Columns in dataset:", df.columns)
+st.write("Columns in dataset:", df.columns)
 
 # Step 2: Data Preprocessing
-print(df.info())  # Check for null values and structure
-if 'review_content' not in df.columns:
-    raise KeyError("Column 'review_content' not found in the dataset. Check column names.")
+df.dropna(subset=['review_content'], inplace=True)
 
-df.dropna(subset=['review_content'], inplace=True)  # Drop null reviews
-
-# Function to clean the text
 def clean_text(text):
     text = text.lower()
     text = re.sub(r'[^\w\s]', '', text)
@@ -40,13 +37,13 @@ df['Sentiment'] = df['cleaned_review'].apply(analyze_sentiment)
 
 # Step 4: Count and Visualize Sentiments
 sentiment_counts = df['Sentiment'].value_counts()
+st.subheader("Sentiment Distribution")
 
-plt.figure(figsize=(8, 4))
-sns.barplot(x=sentiment_counts.index, y=sentiment_counts.values)
-plt.title('Sentiment Distribution')
-plt.xlabel('Sentiment')
-plt.ylabel('Count')
-plt.show()
+fig, ax = plt.subplots()
+sns.barplot(x=sentiment_counts.index, y=sentiment_counts.values, ax=ax)
+ax.set_xlabel("Sentiment")
+ax.set_ylabel("Count")
+st.pyplot(fig)
 
 # Step 5: Aspect-Based Sentiment Analysis
 aspect_keywords = {
@@ -68,15 +65,15 @@ df['Aspect Sentiment'] = df['cleaned_review'].apply(lambda x: aspect_sentiment(x
 
 # Step 6: Analyze Aspect Sentiment
 aspect_summary = pd.DataFrame(df['Aspect Sentiment'].tolist())
-print(aspect_summary.head())
+st.subheader("Aspect Sentiment Distribution")
+st.write(aspect_summary.head())
 
 # Visualize Aspect Sentiment
 aspect_counts = aspect_summary.melt(var_name='Aspect', value_name='Sentiment')
 
-plt.figure(figsize=(10, 5))
-sns.countplot(data=aspect_counts, x='Sentiment', hue='Aspect')
-plt.title('Aspect Sentiment Distribution')
-plt.xlabel('Sentiment')
-plt.ylabel('Count')
-plt.legend(title='Aspect', loc='upper right')
-plt.show()
+fig2, ax2 = plt.subplots(figsize=(10, 5))
+sns.countplot(data=aspect_counts, x='Sentiment', hue='Aspect', ax=ax2)
+ax2.set_xlabel("Sentiment")
+ax2.set_ylabel("Count")
+st.pyplot(fig2)
+
