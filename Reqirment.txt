@@ -1,6 +1,6 @@
 pandas
 numpy
-textblob==0.17.1
+Textblob==0.17.1
 matplotlib
 seaborn
 streamlit
